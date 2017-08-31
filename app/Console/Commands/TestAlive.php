@@ -11,14 +11,14 @@ class TestAlive extends Command
      *
      * @var string
      */
-    protected $signature = 'TestAlive';
+    protected $signature = 'test:alive';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Test if a service is Alive or not';
+    protected $description = '測試服務有沒有活著 (Alive)';
 
     /**
      * Create a new command instance.
@@ -66,15 +66,18 @@ class TestAlive extends Command
             //$parm[2]  :   port
             //$parm[3]  :   descriptions
 
-            echo "正在測試連線至服務 [".$parm[3]."] ...\n";
-            try{
-                $fp = fsockopen($parm[1]."://".$parm[0], $parm[2], $errno, $errstr, 10);
-            }catch (Exception $e) {
-                echo 'fsockopen 失敗，發現例外錯誤： ',  $e->getMessage(), "\n";
+            //略過註解
+            if (substr($parm[0], 0, 1) == '#') continue;
+
+            echo "正在測試連線至服務 [" . $parm[3] . "] ...\n";
+            try {
+                $fp = fsockopen($parm[1] . "://" . $parm[0], $parm[2], $errno, $errstr, 10);
+            } catch (Exception $e) {
+                echo 'fsockopen 失敗，發現例外錯誤： ', $e->getMessage(), "\n";
 
                 //連線失敗
-                $fail_ccount ++;
-                echo "服務 [".$parm[3]."] 測試連線 Port [".$parm[2]."] 失敗，錯誤原因如下: \n";
+                $fail_ccount++;
+                echo "服務 [" . $parm[3] . "] 測試連線 Port [" . $parm[2] . "] 失敗，錯誤原因如下: \n";
                 echo "$errstr ($errno)\n";
 
                 //直接跳到下一個服務繼續測試
@@ -84,12 +87,12 @@ class TestAlive extends Command
 
             if (!$fp) {
                 //連線失敗
-                $fail_ccount ++;
-                echo "服務 [".$parm[3]."] 測試連線 Port [".$parm[2]."] 失敗，錯誤原因如下: \n";
+                $fail_ccount++;
+                echo "服務 [" . $parm[3] . "] 測試連線 Port [" . $parm[2] . "] 失敗，錯誤原因如下: \n";
                 echo "$errstr ($errno)\n";
             } else {
                 //連線成功
-                $success_count ++;
+                $success_count++;
 
                 /*
                 $out = "GET / HTTP/1.1\r\n";
@@ -100,7 +103,7 @@ class TestAlive extends Command
                     echo fgets($fp, 128);
                 }
                 */
-                echo "服務 [".$parm[3]."] 測試連線 Port [".$parm[2]."] 成功 <3\n";
+                echo "服務 [" . $parm[3] . "] 測試連線 Port [" . $parm[2] . "] 成功 <3\n";
                 fclose($fp);
             }
 
@@ -109,9 +112,10 @@ class TestAlive extends Command
         $now = date("Y-m-d H:i:s");
         echo "[$now] 執行完畢！\n";
         echo "統計：\n";
-        echo "服務數量：$total_count\n";
+        echo "服務數量(含註解)：$total_count\n";
+        echo "服務數量：".($success_count+$fail_ccount)."\n";
         echo "連線成功：$success_count\n";
         echo "連線失敗：$fail_ccount\n";
-        echo "健康比率：". round($success_count / $total_count * 100, 2)." %\n";
+        echo "健康比率：". round($success_count / ($success_count + $fail_ccount) * 100, 2)." %\n";
     }
 }
